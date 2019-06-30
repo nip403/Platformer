@@ -1,0 +1,5 @@
+enemnies
+health
+weapon
+hunger
+magic and mana

@@ -1,0 +1,3 @@
+Sky skyblue
+Wall Rect 0 0 50 1000 mudbrown
+Ground Rect 50 700 800 200 lightgreen

@@ -1,3 +1,0 @@
-perfect player movement
-basic backend mechanics
-design tutorial with text prompts

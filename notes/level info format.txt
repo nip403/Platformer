@@ -4,12 +4,16 @@ type of item (wall ground spawner)
 format (rect,line,poly,circle,text)
 coords 
 	rect: x y w h
-	circle: x y r
+	circle: x y r (to be implemented)
 	poly: x y x y x y... (to be implemented)
-	text: x y text($ instead of spaces) range_of_detection
+	text: x y text($ instead of spaces) range_of_detection (to be implemented)
 colour - must be specified in colours file
 
-first line of level is sky details:
+e.g. Wall Rect 10 10 200 200 green
+
+first line of level info is sky details:
 
 Sky
 colour
+
+e.g. Sky skyblue

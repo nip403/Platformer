@@ -12,3 +12,6 @@ A Mario-style platformer written in Python 3.7.x using the Pygame library.
 - CTRL - stop moving
 - SHIFT - crouch
 - F3 - toggle debugging
+
+# Sample Image
+![](https://github.com/nip403/Platformer/blob/master/img/sample1.png)

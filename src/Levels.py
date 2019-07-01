@@ -3,6 +3,7 @@ import pygame
 import sys
 
 #A1 = for debugging purposes
+
 pygame.font.init()
 f = pygame.font.SysFont("Garamond MS",20)
 

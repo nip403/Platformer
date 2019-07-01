@@ -20,16 +20,19 @@ class Player:
         self.width = 25
         self.height = 50
 
-        self._update_rect()
         self.can_jump = True
-        self.SpriteManager = SpriteManager(self)
         self.allow_wall_jump = False
+        self.crouching = False
 
+        self._update_rect()
+        self.SpriteManager = SpriteManager(self)
+        
     def jump(self):
-        self.vely = -15
+        if not self.crouching:
+            self.vely = -15
 
     def movex(self,dx):
-        self.velx += dx
+        self.velx += dx if not self.crouching else dx/2
 
     def draw(self,surf):
         surf.blit(self.SpriteManager.get_sprite(),(self.details.size[0]/2 - self.width/2,self.details.size[1]/2 - self.height/2))
@@ -53,22 +56,32 @@ class Player:
         else:
             self.vely -= self.friction if self.vely > 0 else -self.friction
 
-        if not any(self.rect.colliderect(r) and (set(range(self.x,self.x+self.width)) & set(range(r.left,r.right))) for r in self.rects):
+        if not any(self.rect.colliderect(r) and (set(range(self.x,self.x+self.width)) & set(range(r.left,r.right))) and self.rect.top < r.top for r in self.rects):
             self.vely += self.gravity
 
-        if self.velx > self.velx_cap:
-            self.velx = self.velx_cap
-        elif self.velx < -self.velx_cap:
-            self.velx = -self.velx_cap
+        if self.crouching:
+            if self.velx > self.velx_cap/2:
+                self.velx = self.velx_cap/2
+            elif self.velx < -self.velx_cap/2:
+                self.velx = -self.velx_cap/2
+        else:
+            if self.velx > self.velx_cap:
+                self.velx = self.velx_cap
+            elif self.velx < -self.velx_cap:
+                self.velx = -self.velx_cap
 
-        if self.vely > self.vely_cap:
-            self.vely = self.vely_cap
-        elif self.vely < -self.vely_cap:
-            self.vely = -self.vely_cap
+            if self.vely > self.vely_cap:
+                self.vely = self.vely_cap
+            elif self.vely < -self.vely_cap:
+                self.vely = -self.vely_cap
 
         for x in range(self.x+1,int(self.x+self.velx+1)) if self.velx > 0 else reversed(range(int(self.x+self.velx),self.x)):
             self.x = x
-            self._update_rect()
+            
+            if not self.crouching:
+                self._update_rect()
+            else:
+                self.rect = pygame.Rect(self.x,self.y+15,self.width,self.height-15)
 
             if any(self.rect.colliderect(r) for r in self.rects):
                 self.x -= 1 if self.velx > 0 else -1
@@ -80,7 +93,11 @@ class Player:
 
         for y in range(self.y+1,int(self.y+self.vely+1)) if self.vely > 0 else reversed(range(int(self.y+self.vely),self.y)):
             self.y = y
-            self._update_rect()
+
+            if not self.crouching:
+                self._update_rect()
+            else:
+                self.rect = pygame.Rect(self.x,self.y+15,self.width,self.height-15)
 
             if any(self.rect.colliderect(r) for r in self.rects):
                 self.y -= 1 if self.vely > 0 else -1
@@ -92,6 +109,9 @@ class Player:
                     self.can_jump = True
 
                 break
+
+        if self.crouching:
+            self._update_rect()
 
 class Game:
     def __init__(self,details,init_level=0):
@@ -124,6 +144,9 @@ class SpriteManager:
     def get_sprite(self):
         if self.player.velx * self.old_velx < 0: # if both multiply to make a negative number, there has been a sign change
             self.direction = not self.direction
+
+        if self.player.crouching:
+            return self.sprites[self.direction][6]
 
         if not self.player.velx * self.old_velx and self.player.velx < 0:
             self.direction = False

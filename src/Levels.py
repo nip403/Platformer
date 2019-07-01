@@ -30,6 +30,11 @@ class Level:
         if keys[pygame.K_LCTRL]:
             self.player.velx = 0
 
+        if keys[pygame.K_LSHIFT]:
+            self.player.crouching = True
+        elif self.player.crouching:
+            self.player.crouching = False
+
     def draw(self,surf):
         surf.fill(getattr(Colours,self.fileObjects[0][1],(255,255,255)))
 

@@ -19,10 +19,10 @@ class Level:
 
     def handle(self,keys):
         if keys[pygame.K_a]:
-            self.player.movex(-25)
+            self.player.movex(-5)
 
         if keys[pygame.K_d]:
-            self.player.movex(25)
+            self.player.movex(5)
 
         if keys[pygame.K_SPACE] and self.player.can_jump:
             self.player.jump()
@@ -46,13 +46,23 @@ class GameInstance:
         self.player = player
         self.level = level
         self.details = details
+        self.player.update_level(self.level.fileObjects[1:])
 
         #A1
         self._coords = True
 
+    @property
+    def lvl(self):
+        return self.level
+
+    @lvl.setter
+    def lvl(self,new):
+        self.level = new
+        self.player.update_level(self.level.fileObjects[1:])
+
     def run(self):
         while True: 
-            self.details.clock.tick(30)
+            self.details.clock.tick(100)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -66,7 +76,7 @@ class GameInstance:
             self.level.handle(pygame.key.get_pressed())
             self.level.draw(self.details.surf)
             self.player.draw(self.details.surf)
-            self.player.update(self.level.fileObjects[1:])
+            self.player.update()
 
             #A1
             if self._coords:

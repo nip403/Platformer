@@ -1,7 +1,9 @@
 from Levels import *
 import pygame
 
-#add crouching with shift
+XBOUND = 250000
+YBOUND = 250000
+
 class Player:
     def __init__(self,x,y):
         self.x = x
@@ -14,7 +16,8 @@ class Player:
         self.vely_cap = 25
 
         self.gravity = 0.2
-        self.friction = 0.1
+        self.frictionx = 0.2
+        self.frictiony = 0.1
         self.mass = 1
 
         self.width = 25
@@ -26,6 +29,7 @@ class Player:
 
         self._update_rect()
         self.SpriteManager = SpriteManager(self)
+        self._init_coords = [self.x,self.y]
         
     def jump(self):
         if not self.crouching:
@@ -46,17 +50,17 @@ class Player:
     def update(self):
         self.SpriteManager.update()
 
-        if abs(self.velx) < self.friction:
+        if abs(self.velx) < self.frictionx:
             self.velx = 0
         else:
-            self.velx -= self.friction if self.velx > 0 else -self.friction
+            self.velx -= self.frictionx if self.velx > 0 else -self.frictionx
 
-        if abs(self.vely) < self.friction:
+        if abs(self.vely) < self.frictiony:
             self.vely = 0
         else:
-            self.vely -= self.friction if self.vely > 0 else -self.friction
+            self.vely -= self.frictiony if self.vely > 0 else -self.frictiony
 
-        if not any(self.rect.colliderect(r) and (set(range(self.x,self.x+self.width)) & set(range(r.left,r.right))) and self.rect.top < r.top for r in self.rects):
+        if not any(self.rect.colliderect(r) and (set(range(self.x,self.x+self.width)) & set(range(r.left,r.right))) and self.rect.top < r.top for r in self.rects) and not (self.crouching and any(pygame.Rect(self.x,self.y+1,self.width,self.height).colliderect(r) for r in self.rects)):
             self.vely += self.gravity
 
         if self.crouching:
@@ -70,10 +74,10 @@ class Player:
             elif self.velx < -self.velx_cap:
                 self.velx = -self.velx_cap
 
-            if self.vely > self.vely_cap:
-                self.vely = self.vely_cap
-            elif self.vely < -self.vely_cap:
-                self.vely = -self.vely_cap
+        if self.vely > self.vely_cap:
+            self.vely = self.vely_cap
+        elif self.vely < -self.vely_cap:
+            self.vely = -self.vely_cap
 
         for x in range(self.x+1,int(self.x+self.velx+1)) if self.velx > 0 else reversed(range(int(self.x+self.velx),self.x)):
             self.x = x
@@ -85,6 +89,7 @@ class Player:
 
             if any(self.rect.colliderect(r) for r in self.rects):
                 self.x -= 1 if self.velx > 0 else -1
+                self.velx = 0 
 
                 if self.allow_wall_jump:
                     self.can_jump = True
@@ -112,6 +117,15 @@ class Player:
 
         if self.crouching:
             self._update_rect()
+
+        if not -XBOUND <= self.x <= XBOUND or not -YBOUND <= self.y <= YBOUND:
+            self.x,self.y = self._init_coords
+            self.velx = 0
+            self.vely = 0
+
+    def crouch(self):
+        self._update_rect()
+        self.crouching = not self.crouching if not any(self.rect.colliderect(r) for r in self.rects) else self.crouching
 
 class Game:
     def __init__(self,details,init_level=0):

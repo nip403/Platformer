@@ -7,8 +7,7 @@ pygame.font.init()
 f = pygame.font.SysFont("Garamond MS",20)
 
 class Level:
-    def __init__(self,player,init_level,details):
-        self.player = player
+    def __init__(self,init_level,details):
         self.current_level = init_level
         self.save_level = init_level
         self.details = details
@@ -28,7 +27,7 @@ class Level:
             self.player.jump()
             self.player.can_jump = False
 
-        if keys[pygame.K_LSHIFT]:
+        if keys[pygame.K_LCTRL]:
             self.player.velx = 0
 
     def draw(self,surf):
@@ -37,7 +36,7 @@ class Level:
         x_offset = self.details.size[0]/2 - self.player.rect.centerx
         y_offset = self.details.size[1]/2 - self.player.rect.centery
 
-        for line in self.fileObjects[1:]:
+        for line in self.fileObjects[2:]:
             if line[1] == "Rect":
                 pygame.draw.rect(surf,getattr(Colours,line[-1]),[float(line[2])+x_offset,float(line[3])+y_offset,float(line[4]),float(line[5])],0)
 
@@ -46,7 +45,8 @@ class GameInstance:
         self.player = player
         self.level = level
         self.details = details
-        self.player.update_level(self.level.fileObjects[1:])
+        self.player.update_level(self.level.fileObjects[2:])
+        self.clock = pygame.time.Clock()
 
         #A1
         self._coords = True
@@ -58,11 +58,11 @@ class GameInstance:
     @lvl.setter
     def lvl(self,new):
         self.level = new
-        self.player.update_level(self.level.fileObjects[1:])
+        self.player.update_level(self.level.fileObjects[2:])
 
     def run(self):
         while True: 
-            self.details.clock.tick(100)
+            self.clock.tick(100)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -80,9 +80,9 @@ class GameInstance:
 
             #A1
             if self._coords:
-                self.details.surf.blit(f.render(f"x: {self.player.x}",True,(0,0,0)),(10,10))
-                self.details.surf.blit(f.render(f"y: {self.player.y}",True,(0,0,0)),(10,25))
-                self.details.surf.blit(f.render(f"vx: {self.player.velx}",True,(0,0,0)),(10,40))
-                self.details.surf.blit(f.render(f"vy: {self.player.vely}",True,(0,0,0)),(10,55))
+                self.details.surf.blit(f.render(f"x: {int(self.player.x)}",True,(0,0,0)),(10,10))
+                self.details.surf.blit(f.render(f"y: {int(self.player.y)}",True,(0,0,0)),(10,25))
+                self.details.surf.blit(f.render(f"vx: {int(self.player.velx)}",True,(0,0,0)),(10,40))
+                self.details.surf.blit(f.render(f"vy: {int(self.player.vely)}",True,(0,0,0)),(10,55))
 
             pygame.display.flip()

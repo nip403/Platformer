@@ -1,6 +1,7 @@
 from Levels import *
 import pygame
 
+#add crouching with shift
 class Player:
     def __init__(self,x,y):
         self.x = x
@@ -13,7 +14,7 @@ class Player:
         self.vely_cap = 25
 
         self.gravity = 0.2
-        self.friction = 0.05
+        self.friction = 0.1
         self.mass = 1
 
         self.width = 25
@@ -21,25 +22,8 @@ class Player:
 
         self._update_rect()
         self.can_jump = True
-        self.init_sprites()
-        self.direction = True # rightwards facing is default
-
+        self.SpriteManager = SpriteManager(self)
         self.allow_wall_jump = False
-
-        self.walk_state = 4
-        self.sprint_state = 2
-        self.old_velx = self.velx
-        self.old_y = y
-
-    def init_sprites(self):
-        self._sprites = pygame.Surface([525,50], pygame.SRCALPHA, 32).convert_alpha()
-        self._sprites.blit(pygame.image.load("sprites.png").convert_alpha(),(0,0))
-        self.Rsprites = [self._sprites.subsurface(x*self.width,0,self.width,self.height) for x in range(21)]
-        self.Lsprites = [pygame.transform.flip(s,1,0) for s in self.Rsprites]
-        self.sprites = [self.Lsprites,self.Rsprites]
-
-    def _set_details(self,details):
-        self.details = details
 
     def jump(self):
         self.vely = -15
@@ -48,35 +32,7 @@ class Player:
         self.velx += dx
 
     def draw(self,surf):
-        surf.blit(self.get_sprite(),(self.details.size[0]/2 - self.width/2,self.details.size[1]/2 - self.height/2))
-
-    def get_sprite(self):
-        if self.velx * self.old_velx < 0: # if both multiply to make a negative number, there has been a sign change
-            self.direction = not self.direction
-
-        vely = 0 if not self.y - self.old_y else self.vely
-
-        if all(not i for i in [self.velx,vely]):
-            return self.sprites[self.direction][0]
-
-        if not vely and any(self.rect.colliderect(r) for r in self.rects):
-            if -0.5 * self.velx_cap < self.velx < 0.5 * self.velx_cap:
-                self.walk_state += 1
-
-                if self.walk_state > 20:
-                    self.walk_state = 0
-
-                return self.sprites[self.direction][self.walk_state//10 + 1]
-
-            else:
-                self.sprint_state += 1
-
-                if self.sprint_state > 10:
-                    self.sprint_state = 0
-
-                return self.sprites[self.direction][self.sprint_state//5 + 1]
-
-        return self.sprites[self.direction][5]
+        surf.blit(self.SpriteManager.get_sprite(),(self.details.size[0]/2 - self.width/2,self.details.size[1]/2 - self.height/2))
 
     def _update_rect(self):
         self.rect = pygame.Rect(self.x,self.y,self.width,self.height)
@@ -85,10 +41,7 @@ class Player:
         self.rects = [pygame.Rect(*list(map(int,o[2:6]))) if o[1] == "Rect" else pygame.Rect(int(o[2])-int(o[4]),int(o[3])-int(o[4]),int(o[4])*2,int(o[4])*2) for o in objects]
 
     def update(self):
-        if self.velx:
-            self.old_velx = self.velx
-
-        self.old_y = self.y
+        self.SpriteManager.update()
 
         if abs(self.velx) < self.friction:
             self.velx = 0
@@ -141,18 +94,73 @@ class Player:
                 break
 
 class Game:
-    def __init__(self,player,details):
-        self.player = player
-        self.surf = details.surf
-        self.clock = details.clock
-        self.size = details.size
+    def __init__(self,details,init_level=0):
         self.details = details
+        self.level_manager = Level(0,self.details)
+        self.init()
 
-        # load level 0 (tutorial)
-        self.level_manager = Level(self.player,0,self.details)
-        self.player._set_details(self.details)
+    def init(self):
+        self.level_manager.load()
+        self.player = Player(*[int(self.level_manager.fileObjects[1][i]) for i in range(1,3)])
+
+        setattr(self.level_manager,"player",self.player)
+        setattr(self.player,"details",self.details)
 
     def run(self):
-        self.level_manager.load()
         inst = GameInstance(self.player,self.level_manager,self.details)
         inst.run()
+
+class SpriteManager:
+    def __init__(self,player):
+        self.player = player
+        self.init_sprites()
+        
+        self.direction = True # rightwards facing is default
+        self.walk_state = 4
+        self.sprint_state = 2
+        self.old_velx = self.player.velx
+        self.old_y = self.player.y
+
+    def get_sprite(self):
+        if self.player.velx * self.old_velx < 0: # if both multiply to make a negative number, there has been a sign change
+            self.direction = not self.direction
+
+        if not self.player.velx * self.old_velx and self.player.velx < 0:
+            self.direction = False
+
+        vely = 0 if not self.player.y - self.old_y else self.player.vely
+
+        if all(not i for i in [self.player.velx,vely]):
+            return self.sprites[self.direction][0]
+
+        if not vely and any(self.player.rect.colliderect(r) for r in self.player.rects):
+            if -0.7 * self.player.velx_cap < self.player.velx < 0.7 * self.player.velx_cap:
+                self.walk_state += 1
+
+                if self.walk_state > 20:
+                    self.walk_state = 0
+
+                return self.sprites[self.direction][self.walk_state//10 + 1]
+
+            else:
+                self.sprint_state += 1
+
+                if self.sprint_state > 10:
+                    self.sprint_state = 0
+
+                return self.sprites[self.direction][self.sprint_state//5 + 1]
+
+        return self.sprites[self.direction][5]
+
+    def update(self):
+        if self.player.velx:
+            self.old_velx = self.player.velx
+
+        self.old_y = self.player.y
+
+    def init_sprites(self):
+        self._sprites = pygame.Surface([525,50], pygame.SRCALPHA, 32).convert_alpha()
+        self._sprites.blit(pygame.image.load("sprites.png").convert_alpha(),(0,0))
+        self.Rsprites = [self._sprites.subsurface(x*self.player.width,0,self.player.width,self.player.height) for x in range(21)]
+        self.Lsprites = [pygame.transform.flip(s,1,0) for s in self.Rsprites]
+        self.sprites = [self.Lsprites,self.Rsprites]

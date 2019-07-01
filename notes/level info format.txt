@@ -25,3 +25,9 @@ x
 y
 
 e.g. PlayerSpawn 100 100
+
+Ergo an example file:
+Sky skyblue
+Playerspawn 0 0
+Wall Rect 50 50 200 200
+Ceiling Rect -50 -50 100 50

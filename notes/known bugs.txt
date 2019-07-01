@@ -1,2 +1,1 @@
 screen jitter when walking
-jumping and crouching in midair, and then uncrouhching when hitting a ceiling can result in mario getting stuck in the ceiling

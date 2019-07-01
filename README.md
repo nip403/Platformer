@@ -11,3 +11,4 @@ A Mario-style platformer written in Python 3.7.x using the Pygame library.
 - SPACE - jump
 - CTRL - stop moving
 - SHIFT - crouch
+- F3 - toggle debugging

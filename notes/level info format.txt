@@ -17,3 +17,11 @@ Sky
 colour
 
 e.g. Sky skyblue
+
+second line of level info is player init details
+
+PlayerSpawn
+x
+y
+
+e.g. PlayerSpawn 100 100

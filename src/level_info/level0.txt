@@ -1,3 +1,8 @@
 Sky skyblue
+PlayerSpawn 250 250
 Wall Rect 0 0 50 1000 mudbrown
 Ground Rect 50 700 800 200 lightgreen
+Wall Rect 700 0 4500 500 mudbrown
+wall Rect 400 450 300 50 mudbrown
+Wall Rect 50 0 100 50 mudbrown
+Platform Rect 200 300 100 50 mudbrown

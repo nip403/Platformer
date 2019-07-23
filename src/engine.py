@@ -16,8 +16,8 @@ class Player:
         self.vely_cap = 25
 
         self.gravity = 0.2
-        self.frictionx = 0.2
-        self.frictiony = 0.1
+        self.friction_ground = 0.2
+        self.friction_air = 0.1
         self.mass = 1
 
         self.width = 25
@@ -47,20 +47,23 @@ class Player:
     def update_level(self,objects):
         self.rects = [pygame.Rect(*list(map(int,o[2:6]))) if o[1] == "Rect" else pygame.Rect(int(o[2])-int(o[4]),int(o[3])-int(o[4]),int(o[4])*2,int(o[4])*2) for o in objects]
 
+    def touching_ground(self):
+        return any(pygame.Rect(self.x,self.y+1,self.width,self.height).colliderect(r) for r in self.rects)
+
     def update(self):
         self.SpriteManager.update()
 
-        if abs(self.velx) < self.frictionx:
+        if abs(self.velx) < (self.friction_ground if self.touching_ground() else self.friction_air):
             self.velx = 0
         else:
-            self.velx -= self.frictionx if self.velx > 0 else -self.frictionx
+            self.velx -= (self.friction_ground if self.touching_ground() else self.friction_air) if self.velx > 0 else -(self.friction_ground if self.touching_ground() else self.friction_air)
 
-        if abs(self.vely) < self.frictiony:
+        if abs(self.vely) < self.friction_air:
             self.vely = 0
         else:
-            self.vely -= self.frictiony if self.vely > 0 else -self.frictiony
+            self.vely -= self.friction_air if self.vely > 0 else -self.friction_air
 
-        if not any(self.rect.colliderect(r) and (set(range(self.x,self.x+self.width)) & set(range(r.left,r.right))) and self.rect.top < r.top for r in self.rects) and not (self.crouching and any(pygame.Rect(self.x,self.y+1,self.width,self.height).colliderect(r) for r in self.rects)):
+        if not any(self.rect.colliderect(r) and (set(range(self.x,self.x+self.width)) & set(range(r.left,r.right))) and self.rect.top < r.top for r in self.rects) and not (self.crouching and self.touching_ground()):
             self.vely += self.gravity
 
         if self.crouching:
@@ -171,7 +174,7 @@ class SpriteManager:
             return self.sprites[self.direction][0]
 
         if not vely and any(self.player.rect.colliderect(r) for r in self.player.rects):
-            if -0.7 * self.player.velx_cap < self.player.velx < 0.7 * self.player.velx_cap:
+            if -0.5 * self.player.velx_cap < self.player.velx < 0.5 * self.player.velx_cap:
                 self.walk_state += 1
 
                 if self.walk_state > 20:

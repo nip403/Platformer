@@ -4,7 +4,7 @@ import sys
 
 #A1 = for debugging purposes
 pygame.font.init()
-f = pygame.font.SysFont("Garamond MS",20)
+f = pygame.font.Font("minecraftFont.ttf",20)
 
 class Level:
     def __init__(self,init_level,details):
@@ -85,8 +85,8 @@ class GameInstance:
             #A1
             if self._coords:
                 self.details.surf.blit(f.render(f"x: {int(self.player.x)}",True,(0,0,0)),(10,10))
-                self.details.surf.blit(f.render(f"y: {int(self.player.y)}",True,(0,0,0)),(10,25))
-                self.details.surf.blit(f.render(f"vx: {int(self.player.velx)}",True,(0,0,0)),(10,40))
-                self.details.surf.blit(f.render(f"vy: {int(self.player.vely)}",True,(0,0,0)),(10,55))
+                self.details.surf.blit(f.render(f"y: {int(self.player.y)}",True,(0,0,0)),(10,30))
+                self.details.surf.blit(f.render(f"vx: {int(self.player.velx)}",True,(0,0,0)),(10,50))
+                self.details.surf.blit(f.render(f"vy: {int(self.player.vely)}",True,(0,0,0)),(10,70))
 
             pygame.display.flip()

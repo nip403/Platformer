@@ -1,4 +1,4 @@
-# Platformer
+# Platformer WIP
 A Mario-style platformer written in Python 3.7.x using the Pygame library.
 
 # Physics
